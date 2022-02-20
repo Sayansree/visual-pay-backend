@@ -1,0 +1,13 @@
+{
+    "name": "bridge-test-api",
+    "description": "test bridge",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js",
+      "test": "mocha ./test.js --exit"
+    },
+    "dependencies": {      
+      "dotenv": "^8.2.0",
+      "express": "^4.17.1"
+    }
+  }
