@@ -50,9 +50,9 @@ app.get("/consent/:mobileNumber", (req, res) => {
 });
 
 ////// CONSENT NOTIFICATION
-
-app.post("/notification", (req, res) => {
-  var body = req.body;
+var body{}
+app.post("/visualpay", (req, res) => {
+   body = req.body;
   if (body.type === "CONSENT_STATUS_UPDATE") {
     if (body.data.status === "ACTIVE") {
       console.log("In Consent notification");
@@ -72,7 +72,9 @@ app.post("/notification", (req, res) => {
 
   res.send("OK");
 });
-
+app.get("/visualpay", (req, res) => {
+  res.send(body);
+})
 ////// FI DATA REQUEST
 
 const fi_data_request = async (consent_id) => {
