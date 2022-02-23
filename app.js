@@ -8,7 +8,7 @@ var axios = require("axios");
 const localStorage = require("localStorage");
 
 const createData = require("./util/consent_detail");
-const dataFlow = require("./util/request_data");
+const requestData = require("./util/request_data");
 
 
 app.use(cors());
@@ -20,7 +20,7 @@ app.use(express.static("public"));
 app.get("/", function (req, res) {
   res.send("Hello");
 });
-console.log(config)
+
 
 ///// CREATE CONSENT CALL
 
@@ -39,7 +39,7 @@ app.get("/consent/:mobileNumber", (req, res) => {
   };
 
   axios(requestConfig)
-    .then(function (response) {
+    .then( (response)=> {
       let url = response.data.url;
       res.send(url);
     })
@@ -79,7 +79,7 @@ app.get("/visualpay", (req, res) => {
 
 const fi_data_request = async (consent_id) => {
   console.log("In FI data request");
-  let request_body = dataFlow.requestData(consent_id);
+  let request_body = requestData(consent_id);
   var requestConfig = {
     method: "post",
     url: config.api_url + "/sessions",
