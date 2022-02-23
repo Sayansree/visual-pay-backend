@@ -129,9 +129,11 @@ app.post("/redirect", (req, res) => {
 });
 
 ///// GET DATA
-
-app.get("/get-data", (req, res) => {
+app.get("/get-data/DEPOSIT", (req, res) => {
   res.send(JSON.parse(localStorage.getItem("jsonData")));
 });
-// start the server listening for requests
+app.get("/get-data/:type", (req, res) => {
+  res.send(config.fiData[req.params.type]);
+});
+
 app.listen(config.port || 3000, () => console.log("Server is running..."));
