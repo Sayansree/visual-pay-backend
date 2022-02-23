@@ -50,7 +50,7 @@ app.get("/consent/:mobileNumber", (req, res) => {
 });
 
 ////// CONSENT NOTIFICATION
-var body{}
+var body={}
 app.post("/visualpay", (req, res) => {
    body = req.body;
   if (body.type === "CONSENT_STATUS_UPDATE") {
