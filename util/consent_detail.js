@@ -43,7 +43,7 @@ const createData = (mobileNumber) => {
       },
       fiTypes: ["DEPOSIT"],
     },
-    redirectUrl: "https://visualpe.herokuapp.com/",
+    redirectUrl: "https://ansuman528.github.io/VisualPe",
   });
 
   return data;
