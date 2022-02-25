@@ -41,7 +41,7 @@ app.get("/consent/:mobileNumber", (req, res) => {
   axios(requestConfig)
     .then( (response)=> {
       let url = response.data.url;
-      res.send(url);
+      res.send({"url":url,"id":response.data.id,"jwt":""});
     })
     .catch(function (error) {
       console.log(error);
