@@ -2,6 +2,8 @@
 // create an express app
 const express = require("express");
 const cors = require("cors");
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcryptjs');
 const app = express();
 const config = require("./config");
 var axios = require("axios");
@@ -9,44 +11,103 @@ const localStorage = require("localStorage");
 
 const createData = require("./util/consent_detail");
 const requestData = require("./util/request_data");
-
+// var AuthController = require('./AuthController');
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 app.use(express.static("public"));
-
+// app.use("/",AuthController)
 app.get("/", function (req, res) {
   res.send("Hello");
 });
 
+db={
+phone:"",
+pin:"",
+id:"j"
+}
 
-///// CREATE CONSENT CALL
-
-app.get("/consent/:mobileNumber", (req, res) => {
+const checkPhone=(phn)=>{//verified
+  console.log("check phone")
+  return db.phone==phn
+  
+}
+const addUser=(phn,pin)=>{
+  console.log("adduser")
+  db.phone=phn
+  db.pin=pin
+}
+const checkAuth=(phn,pin)=>{//verified
+  console.log("check auth")
+  return db.phone==phn && db.pin==pin
+}
+const addId=(phn,id)=>{
+  console.log("addId")
+  db.id=id
+}
+const delUser=(phn)=>{
+  console.log("del user")
+  db.phone=""
+  db.pin=""
+  db.id=null
+}
+const getid=(phn)=>{
+  console.log("get id")
+  return db.id
+}
+app.get('/checklogin', (req, res)=> {
+  var token = req.headers['x-access-token'];
+  if (!token) return res.send({ auth: false,wait:false, message: 'No token provided.' });
+  jwt.verify(token,config.JWT_secret, (err, decoded)=> {
+  if (err) return res.send({ auth: false,wait:false, message: 'Failed to authenticate token.' });
+  res.send({auth:true,wait:getid(decoded.phone)==null,message:"login successful"});
+  });
+});
+app.post("/consent/:mobileNumber", (req, res) => {
   localStorage.setItem("consent", "Pending");
-  let body = createData(req.params.mobileNumber);
-  var requestConfig = {
-    method: "post",
-    url: config.api_url + "/consents",
-    headers: {
-      "Content-Type": "application/json",
-      "x-client-id": config.client_id,
-      "x-client-secret": config.client_secret,
-    },
-    data: body,
-  };
+ 
+  var token = req.headers['x-access-token'];
+  if (token) 
+    jwt.verify(token,config.JWT_secret, (err, decoded)=> {
+    if (!err) res.send({ url:"https://ansuman528.github.io/VisualPe", token: token });
+    })
+  obj={
+    phone : req.params.mobileNumber,
+    // hash : bcrypt.hashSync((new Date()).toUTCString(), 8)
+  }
+  var token = jwt.sign(obj, config.JWT_secret, {expiresIn: 86400 });
 
+  if(checkPhone(req.params.mobileNumber))
+    if(checkAuth(req.params.mobileNumber,req.body.pin))
+      res.send({ url:"https://ansuman528.github.io/VisualPe", token: token }); 
+    else
+      res.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
+  else{
+    let body = createData(req.params.mobileNumber);
+    var requestConfig = {
+      method: "post",
+      url: config.api_url + "/consents",
+      headers: {
+        "Content-Type": "application/json",
+        "x-client-id": config.client_id,
+        "x-client-secret": config.client_secret,
+        },
+      data: body,
+    };
   axios(requestConfig)
     .then( (response)=> {
       let url = response.data.url;
-      res.send({"url":url,"id":response.data.id,"jwt":""});
+      //write phone no pin to db
+      addUser(req.params.mobileNumber,req.body.pin)
+      res.send({"url":url,"jwt":token});
     })
     .catch(function (error) {
       console.log(error);
       console.log("Error");
     });
+  }
 });
 
 ////// CONSENT NOTIFICATION
@@ -56,8 +117,10 @@ app.post("/visualpay", (req, res) => {
   if (body.type === "CONSENT_STATUS_UPDATE") {
     if (body.data.status === "ACTIVE") {
       console.log("In Consent notification");
+      addId(body.data.Detail.Customer.id.split("@")[0],body.consentId)
       fi_data_request(body.consentId);
     } else {
+      delUser(body.data.Detail.Customer.id.split("@")[0])
       localStorage.setItem("jsonData", "Rejected");
     }
   }

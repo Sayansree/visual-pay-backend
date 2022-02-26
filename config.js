@@ -13,6 +13,7 @@ module.exports = {
   api_url: process.env.API_URL,
   client_id: process.env.CLIENT_ID,
   client_secret: process.env.CLIENT_SECRET,
+  JWT_secret:process.env.JWT_SECRET,
   fiData : {
     TERM_DEPOSIT: {
       "type": "term_deposit",
