@@ -14,6 +14,7 @@ module.exports = {
   client_id: process.env.CLIENT_ID,
   client_secret: process.env.CLIENT_SECRET,
   JWT_secret:process.env.JWT_SECRET,
+  mongodb_secret:process.env.MDB_SECRET,
   fiData : {
     TERM_DEPOSIT: {
       "type": "term_deposit",

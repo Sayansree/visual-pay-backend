@@ -18,7 +18,28 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 app.use(express.static("public"));
-// app.use("/",AuthController)
+
+
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = `mongodb+srv://sayansree:qwerty1234@cluster0.eywtc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+async function run() {
+  try {
+    // Connect the client to the server
+    await client.connect();
+    // Establish and verify connection
+    const db= client.db("VisualPe");
+    const collection = db.collection('users');
+    const insertResult = await collection.insertMany([{ a: 1 }, { a: 2 }, { a: 3 }]);
+    console.log('Inserted documents =>', insertResult);
+    console.log("Connected successfully to server");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
+  }
+}
+run().catch(console.dir);
+
 app.get("/", function (req, res) {
   res.send("Hello");
 });
@@ -26,7 +47,7 @@ app.get("/", function (req, res) {
 db={
 phone:"",
 pin:"",
-id:"j"
+id:null
 }
 
 const checkPhone=(phn)=>{//verified
@@ -65,6 +86,7 @@ app.get('/checklogin', (req, res)=> {
   res.send({auth:true,wait:getid(decoded.phone)==null,message:"login successful"});
   });
 });
+
 app.post("/consent/:mobileNumber", (req, res) => {
   localStorage.setItem("consent", "Pending");
  
@@ -75,8 +97,9 @@ app.post("/consent/:mobileNumber", (req, res) => {
     })
   obj={
     phone : req.params.mobileNumber,
-    // hash : bcrypt.hashSync((new Date()).toUTCString(), 8)
+    hash : bcrypt.hashSync((new Date()).toUTCString(), 8)
   }
+  
   var token = jwt.sign(obj, config.JWT_secret, {expiresIn: 86400 });
 
   if(checkPhone(req.params.mobileNumber))
