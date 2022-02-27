@@ -127,9 +127,9 @@ app.get('/checklogin', (req, res)=> {
   jwt.verify(token,config.JWT_secret, (err, decoded)=> {
     if (err) return res.send({ auth: false,wait:false, message: 'Failed to authenticate token.' });
     getid(decoded.phone)
-    .then((res)=>{
+    .then((resp)=>{
       console.log("db:login successful")
-      res.send({auth:true,wait:res==null,message:"login successful"});
+      res.send({auth:true,wait:resp==null,message:"login successful"});
     }).catch(()=>console.log("db: getid error"))
   });
 });
