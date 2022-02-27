@@ -21,74 +21,121 @@ app.use(express.static("public"));
 
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = `mongodb+srv://sayansree:qwerty1234@cluster0.eywtc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://sayansree:${config.mongodb_secret}@cluster0.eywtc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-async function run() {
+
+const db=null
+const users=null
+async function setup() {
   try {
-    // Connect the client to the server
     await client.connect();
-    // Establish and verify connection
-    const db= client.db("VisualPe");
-    const collection = db.collection('users');
-    const insertResult = await collection.insertMany([{ a: 1 }, { a: 2 }, { a: 3 }]);
-    console.log('Inserted documents =>', insertResult);
+    db= client.db("VisualPe");
+    users = db.collection('users');
     console.log("Connected successfully to server");
-  } finally {
-    // Ensures that the client will close when you finish/error
+  } catch(err) {
     await client.close();
   }
 }
-run().catch(console.dir);
+setup().catch(console.dir);
 
 app.get("/", function (req, res) {
   res.send("Hello");
 });
 
-db={
-phone:"",
-pin:"",
-id:null
-}
 
 const checkPhone=(phn)=>{//verified
   console.log("check phone")
-  return db.phone==phn
-  
+  return myPromise = new Promise(async(success, fail) =>{
+    const res=await collection.findOne({phone:1239})
+    if(res){
+      success();
+    }else
+      fail();
+  })
+ 
 }
 const addUser=(phn,pin)=>{
-  console.log("adduser")
-  db.phone=phn
-  db.pin=pin
+  console.log("add user")
+  return myPromise = new Promise(async(success, fail) =>{
+    users.insertOne({phone:phn,
+      pinHash:pin,
+      clientID:null,
+      dataSessionID:null,
+      fiData:null
+    }).then(res=>success())
+    .catch(err=>fail())
+  })
 }
 const checkAuth=(phn,pin)=>{//verified
   console.log("check auth")
-  return db.phone==phn && db.pin==pin
+  return myPromise = new Promise(async(success, fail) =>{
+    const res=await collection.findOne({phone:phn},{projection:{_id:0,phone:1,pinHash:1}})
+    if(res){
+      success(res.pinHash==pin);
+    }else
+      fail();
+  })
 }
 const addId=(phn,id)=>{
   console.log("addId")
-  db.id=id
+  return myPromise = new Promise(async(success, fail) =>{
+    collection.updateOne({phone:phn},{$set:{clientID:id}})
+    .then(res=>success())
+    .catch(err=>fail())
+  })
+
+}
+const addFiData=(consent_id,data)=>{
+  console.log("add fi data")
+  return myPromise = new Promise(async(success, fail) =>{
+    collection.updateOne({clientID:consent_id},{$set:{fiData:data}})
+    .then(res=>success())
+    .catch(err=>fail())
+  })
+}
+const getFiData=(phn)=>{
+  console.log("get fi data")
+  return myPromise = new Promise(async(success, fail) =>{
+    const res=await collection.findOne({phone:phn},{projection:{_id:0,phone:1,fiData:1}})
+    if(res)
+      success(res.fiData);
+    else
+      fail();
+  })
 }
 const delUser=(phn)=>{
   console.log("del user")
-  db.phone=""
-  db.pin=""
-  db.id=null
+  return myPromise = new Promise(async(success, fail) =>{
+    collection.deleteOne({phone:phn})
+    .then(res=>success())
+    .catch(err=>fail())
+  })
 }
 const getid=(phn)=>{
   console.log("get id")
-  return db.id
+  return myPromise = new Promise(async(success, fail) =>{
+    const res=await collection.findOne({phone:phn},{projection:{_id:0,phone:1,clientID:1}})
+    if(res){
+      success(res.clientID);
+    }else
+      fail();
+  })
 }
 app.get('/checklogin', (req, res)=> {
   var token = req.headers['x-access-token'];
   if (!token) return res.send({ auth: false,wait:false, message: 'No token provided.' });
   jwt.verify(token,config.JWT_secret, (err, decoded)=> {
-  if (err) return res.send({ auth: false,wait:false, message: 'Failed to authenticate token.' });
-  res.send({auth:true,wait:getid(decoded.phone)==null,message:"login successful"});
+    if (err) return res.send({ auth: false,wait:false, message: 'Failed to authenticate token.' });
+    getid(decoded.phone)
+    .then((res)=>{
+      console.log("db:login successful")
+      res.send({auth:true,wait:res==null,message:"login successful"});
+    }).catch(()=>console.log("db: getid error"))
   });
 });
 
 app.post("/consent/:mobileNumber", (req, res) => {
-  localStorage.setItem("consent", "Pending");
+  // localStorage.setItem("consent", "Pending");
  
   var token = req.headers['x-access-token'];
   if (token) 
@@ -102,12 +149,22 @@ app.post("/consent/:mobileNumber", (req, res) => {
   
   var token = jwt.sign(obj, config.JWT_secret, {expiresIn: 86400 });
 
-  if(checkPhone(req.params.mobileNumber))
-    if(checkAuth(req.params.mobileNumber,req.body.pin))
-      res.send({ url:"https://ansuman528.github.io/VisualPe", token: token }); 
-    else
-      res.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
-  else{
+  checkPhone(req.params.mobileNumber)
+  .then(()=>{
+        checkAuth(req.params.mobileNumber,req.body.pin)
+        .then(res=>{
+          console.log(`login auth:${res}`)
+          if(res)
+            res.send({ url:"https://ansuman528.github.io/VisualPe", token: token }); 
+          else
+            res.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
+        }).catch(()=>{
+          console.log("login error")
+          res.sendStatus(500)}
+        )
+     
+  }).catch(()=>{
+    console.log("new user")
     let body = createData(req.params.mobileNumber);
     var requestConfig = {
       method: "post",
@@ -124,13 +181,22 @@ app.post("/consent/:mobileNumber", (req, res) => {
       let url = response.data.url;
       //write phone no pin to db
       addUser(req.params.mobileNumber,req.body.pin)
-      res.send({"url":url,"jwt":token});
+      .then(()=>{
+        console.log("new user registered")
+        res.send({"url":url,"jwt":token});
+      })
+      .catch(()=>console.log("error adding user"))
+      
     })
     .catch(function (error) {
       console.log(error);
-      console.log("Error");
+      console.log("Error AA create consent req");
     });
-  }
+    
+  })
+    
+  
+
 });
 
 ////// CONSENT NOTIFICATION
@@ -139,23 +205,28 @@ app.post("/visualpay", (req, res) => {
    body = req.body;
   if (body.type === "CONSENT_STATUS_UPDATE") {
     if (body.data.status === "ACTIVE") {
-      console.log("In Consent notification");
+      console.log("web: Consent ACTIVE notification");
       addId(body.data.Detail.Customer.id.split("@")[0],body.consentId)
+      .then(()=>console.log("db: added cons ID "))
+      .catch(()=>console.log("db: failed to add cons ID"))
       fi_data_request(body.consentId);
     } else {
+      console.log("web: consent rejected")
       delUser(body.data.Detail.Customer.id.split("@")[0])
-      localStorage.setItem("jsonData", "Rejected");
+      .then(()=>console.log("db: del usr done"))
+      .catch(()=>console.log("db: del use failed"))
+      // localStorage.setItem("jsonData", "Rejected");
     }
   }
   if (body.type === "SESSION_STATUS_UPDATE") {
     if (body.data.status === "COMPLETED") {
-      console.log("In FI notification");
-      fi_data_fetch(body.dataSessionId);
+      console.log("web: FI COMPLETE notification");
+      fi_data_fetch(body.dataSessionId,body.consentId);
     } else {
-      localStorage.setItem("jsonData", "PENDING");
+      console.log("web: FI PENDING notification");
+      // localStorage.setItem("jsonData", "PENDING");
     }
   }
-
   res.send("OK");
 });
 app.get("/visualpay", (req, res) => {
@@ -183,13 +254,13 @@ const fi_data_request = async (consent_id) => {
     })
     .catch(function (error) {
       console.log(error);
-      console.log("Error");
+      console.log("web: Error data session request");
     });
 };
 
 ////// FETCH DATA REQUEST
 
-const fi_data_fetch = (session_id) => {
+const fi_data_fetch = (session_id,consent_id) => {
   console.log("In FI data fetch");
   var requestConfig = {
     method: "get",
@@ -202,21 +273,35 @@ const fi_data_fetch = (session_id) => {
   };
   axios(requestConfig)
     .then(function (response) {
+      addFiData(consentId,response)
+      .then(()=>console.log("db: added data to local storage"))
+      .catch(()=>console.log("db: add data error"))
       localStorage.setItem("jsonData", JSON.stringify(response.data));
     })
     .catch(function (error) {
       console.log(error);
-      console.log("Error");
+      console.log("web: fetch data Error");
     });
 };
 
-app.post("/redirect", (req, res) => {
-  res.send(localStorage.getItem("consent"));
-});
+// app.post("/redirect", (req, res) => {
+//   res.send(localStorage.getItem("consent"));
+// });
 
 ///// GET DATA
 app.get("/get-data/DEPOSIT", (req, res) => {
-  res.send(JSON.parse(localStorage.getItem("jsonData")));
+  // res.send(JSON.parse(localStorage.getItem("jsonData")));
+  var token = req.headers['x-access-token'];
+  if (token) 
+    jwt.verify(token,config.JWT_secret, (err, decoded)=> {
+    if (err) res.sendStatus(403)
+      getFiData(decoded.phone)
+      .then((resp)=>{
+        console.log("db: data retrive success")
+        res.send(resp)
+      }).catch(()=>console.log("db : error data retrive"))
+    })
+    else res.sendStatus(403)
 });
 app.get("/get-data/:type", (req, res) => {
   res.send(config.fiData[req.params.type]);
