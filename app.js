@@ -24,13 +24,14 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://sayansree:${config.mongodb_secret}@cluster0.eywtc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-const db=null
-const users=null
+var db=null
+var users=null
 async function setup() {
   try {
     await client.connect();
     db= client.db("VisualPe");
     users = db.collection('users');
+    users.find()
     console.log("Connected successfully to server");
   } catch(err) {
     await client.close();
