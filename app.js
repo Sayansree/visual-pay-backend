@@ -273,7 +273,7 @@ const fi_data_fetch = (session_id,consent_id) => {
   };
   axios(requestConfig)
     .then(function (response) {
-      addFiData(consent_id,response)
+      addFiData(consent_id,response.data)
       .then(()=>console.log("db: added data to local storage"))
       .catch(()=>console.log("db: add data error"))
       localStorage.setItem("jsonData", JSON.stringify(response.data));
