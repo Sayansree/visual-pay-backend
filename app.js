@@ -46,7 +46,7 @@ app.get("/", function (req, res) {
 const checkPhone=(phn)=>{//verified
   console.log("check phone")
   return myPromise = new Promise(async(success, fail) =>{
-    const res=await collection.findOne({phone:1239})
+    const res=await users.findOne({phone:1239})
     if(res){
       success();
     }else
@@ -69,7 +69,7 @@ const addUser=(phn,pin)=>{
 const checkAuth=(phn,pin)=>{//verified
   console.log("check auth")
   return myPromise = new Promise(async(success, fail) =>{
-    const res=await collection.findOne({phone:phn},{projection:{_id:0,phone:1,pinHash:1}})
+    const res=await users.findOne({phone:phn},{projection:{_id:0,phone:1,pinHash:1}})
     if(res){
       success(res.pinHash==pin);
     }else
@@ -79,7 +79,7 @@ const checkAuth=(phn,pin)=>{//verified
 const addId=(phn,id)=>{
   console.log("addId")
   return myPromise = new Promise(async(success, fail) =>{
-    collection.updateOne({phone:phn},{$set:{clientID:id}})
+    users.updateOne({phone:phn},{$set:{clientID:id}})
     .then(res=>success())
     .catch(err=>fail())
   })
@@ -88,7 +88,7 @@ const addId=(phn,id)=>{
 const addFiData=(consent_id,data)=>{
   console.log("add fi data")
   return myPromise = new Promise(async(success, fail) =>{
-    collection.updateOne({clientID:consent_id},{$set:{fiData:data}})
+    users.updateOne({clientID:consent_id},{$set:{fiData:data}})
     .then(res=>success())
     .catch(err=>fail())
   })
@@ -96,7 +96,7 @@ const addFiData=(consent_id,data)=>{
 const getFiData=(phn)=>{
   console.log("get fi data")
   return myPromise = new Promise(async(success, fail) =>{
-    const res=await collection.findOne({phone:phn},{projection:{_id:0,phone:1,fiData:1}})
+    const res=await users.findOne({phone:phn},{projection:{_id:0,phone:1,fiData:1}})
     if(res)
       success(res.fiData);
     else
@@ -106,7 +106,7 @@ const getFiData=(phn)=>{
 const delUser=(phn)=>{
   console.log("del user")
   return myPromise = new Promise(async(success, fail) =>{
-    collection.deleteOne({phone:phn})
+    users.deleteOne({phone:phn})
     .then(res=>success())
     .catch(err=>fail())
   })
@@ -114,7 +114,7 @@ const delUser=(phn)=>{
 const getid=(phn)=>{
   console.log("get id")
   return myPromise = new Promise(async(success, fail) =>{
-    const res=await collection.findOne({phone:phn},{projection:{_id:0,phone:1,clientID:1}})
+    const res=await users.findOne({phone:phn},{projection:{_id:0,phone:1,clientID:1}})
     if(res){
       success(res.clientID);
     }else
