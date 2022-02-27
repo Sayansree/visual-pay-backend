@@ -152,13 +152,13 @@ app.post("/consent/:mobileNumber", (req, res) => {
   checkPhone(req.params.mobileNumber)
   .then(()=>{
         checkAuth(req.params.mobileNumber,req.body.pin)
-        .then(res=>{
+        .then(resp=>{
           console.log(`login auth:${res}`)
           if(res)
-            res.send({ url:"https://ansuman528.github.io/VisualPe", token: tokenjwt }); 
+            resp.send({ url:"https://ansuman528.github.io/VisualPe", token: tokenjwt }); 
           else
-            res.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
-            return
+            resp.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
+        return
         }).catch(()=>{
           console.log("login error")
           res.sendStatus(500)}
@@ -308,4 +308,4 @@ app.get("/get-data/:type", (req, res) => {
   res.send(config.fiData[req.params.type]);
 });
 
-app.listen(config.port || 3000, () => console.log("Server is running..."));
+app.listen(config.port || 5000, () => console.log("Server is running..."));
