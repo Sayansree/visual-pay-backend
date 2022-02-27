@@ -46,7 +46,7 @@ app.get("/", function (req, res) {
 const checkPhone=(phn)=>{//verified
   console.log("check phone")
   return myPromise = new Promise(async(success, fail) =>{
-    const res=await users.findOne({phone:1239})
+    const res=await users.findOne({phone:phn})
     if(res){
       success();
     }else
