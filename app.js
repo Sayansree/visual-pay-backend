@@ -31,7 +31,6 @@ async function setup() {
     await client.connect();
     db= client.db("VisualPe");
     users = db.collection('users');
-    users.find()
     console.log("Connected successfully to server");
   } catch(err) {
     await client.close();
