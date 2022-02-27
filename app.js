@@ -158,6 +158,7 @@ app.post("/consent/:mobileNumber", (req, res) => {
             res.send({ url:"https://ansuman528.github.io/VisualPe", token: token }); 
           else
             res.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
+            return
         }).catch(()=>{
           console.log("login error")
           res.sendStatus(500)}
@@ -183,7 +184,7 @@ app.post("/consent/:mobileNumber", (req, res) => {
       addUser(req.params.mobileNumber,req.body.pin)
       .then(()=>{
         console.log("new user registered")
-        res.send({"url":url,"jwt":token});
+        res.send({"url":url,"token":token});
       })
       .catch(()=>console.log("error adding user"))
       
