@@ -154,10 +154,10 @@ app.post("/consent/:mobileNumber", (req, res) => {
         checkAuth(req.params.mobileNumber,req.body.pin)
         .then(resp=>{
           console.log(`login auth:${res}`)
-          if(res)
-            resp.send({ url:"https://ansuman528.github.io/VisualPe", token: tokenjwt }); 
+          if(resp)
+            res.send({ url:"https://ansuman528.github.io/VisualPe", token: tokenjwt }); 
           else
-            resp.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
+            res.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
         return
         }).catch(()=>{
           console.log("login error")
