@@ -147,7 +147,7 @@ app.post("/consent/:mobileNumber", (req, res) => {
     hash : bcrypt.hashSync((new Date()).toUTCString(), 8)
   }
   
-  var token = jwt.sign(obj, config.JWT_secret, {expiresIn: 86400 });
+  var tokenjwt = jwt.sign(obj, config.JWT_secret, {expiresIn: 86400 });
 
   checkPhone(req.params.mobileNumber)
   .then(()=>{
@@ -155,7 +155,7 @@ app.post("/consent/:mobileNumber", (req, res) => {
         .then(res=>{
           console.log(`login auth:${res}`)
           if(res)
-            res.send({ url:"https://ansuman528.github.io/VisualPe", token: token }); 
+            res.send({ url:"https://ansuman528.github.io/VisualPe", token: tokenjwt }); 
           else
             res.send({ url:"https://ansuman528.github.io/VisualPe/login.html", token: null });
             return
@@ -184,7 +184,7 @@ app.post("/consent/:mobileNumber", (req, res) => {
       addUser(req.params.mobileNumber,req.body.pin)
       .then(()=>{
         console.log("new user registered")
-        res.send({"url":url,"token":token});
+        res.send({"url":url,"token":tokenjwt});
       })
       .catch(()=>console.log("error adding user"))
       
